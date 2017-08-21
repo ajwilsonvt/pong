@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="css/style.css">
+    <title>Pong</title>
+</head>
+<body>
+    <div class="main">
+        <!-- <h1>Pong</h1>
+        <div class="instructions">
+            <h2>Instructions</h2>
+            <p>Press `1` for single player</p>
+            <p>Player 1 uses `q` to move up and `a` to move down</p>
+            <p>Press `2` for double player</p>
+            <p>Player 2 uses `p` to move up and `l` to move down</p>
+            <p>Press `0` for observe mode</p>
+            <p>Press `esc` to abandon a game</p>
+        </div> -->
+        <canvas id="game"></canvas>
+    </div>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+<script src="js/gamerunner.js"></script>
+<script src="js/app.js"></script>
+<script type="text/javascript">
+    Game.ready(function () {
+        var pong = Game.start('game', Pong);
+    });
+</script>
+</body>
+</html>

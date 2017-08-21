@@ -18,7 +18,7 @@ todo
 
 ![wireframe](/images/pong-wireframe.png)
 
-2. Created and used trello board to track feature development
+2. Created and used [trello board](https://trello.com/b/7dQ5BoAR) to track feature development
 
 ![trello-board](/images/trello-board.png)
 
