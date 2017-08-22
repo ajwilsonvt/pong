@@ -1,7 +1,22 @@
-// game runner designed to provide canvas and library methods for multiple
-// types of games
+/**
+ * http://codeincomplete.com/
+ * Game Runner Loop
+ * Intialize the runner
+ * Construct canvas front and back buffers
+ * Construct a game instance
+ * Start a 60 fps loop and on each iteration:
+ *     - Call game.update() to provide dt timer interval since last frame
+ *     - Call game.draw() to provide back buffer canvas context for drawing
+ *     - Flip back and front buffers
+ *     - Update frame rate statistics
+ */
 
-// implement ES5 methods for compatibility ---------------------------------------
+/** ===========================================================================
+ * Custom object methods
+ */
+
+// wrapper for Object.create that allows arguments to be passed to a
+// constructor function
 if (!Object.construct) {
     Object.construct = function(base) {
         var instance = Object.create(base);
@@ -11,6 +26,7 @@ if (!Object.construct) {
     };
 }
 
+// enable ability to copy all properties of one object to another
 if (!Object.extend) {
     Object.extend = function(destination, source) {
         for (var property in source) {
@@ -20,16 +36,17 @@ if (!Object.extend) {
         return destination;
     };
 }
-// end ES5 methods ---------------------------------------------------------------
 
+/** ===========================================================================
+ * Library for game logic
+ */
 var Game = {
 
     compatible: function () {
-        // return ES5 methods to check compatibility
+        // return ES5 methods and custom object methods to check compatibility
         return Object.create &&
                Object.extend &&
-               Function.bind &&
-               document.addEventListener;
+               Function.bind;
     },
 
     start: function (id, game, config) {
@@ -54,18 +71,17 @@ var Game = {
         return document.createElement('canvas');
     },
 
-    // createAudio: function (src) {
-    //     try {
-    //         var a = new Audio(src);
-    //         a.volume = 0.1; // lets be real quiet please
-    //         return a;
-    //     } catch (e) {
-    //         return null;
-    //     }
-    // },
+    createAudio: function (src) {
+        try {
+            var a = new Audio(src);
+            a.volume = 0.1;
+            return a;
+        } catch (e) {
+            return null;
+        }
+    },
 
-    // load multiple images, and only run callback function when all images
-    // have been loaded
+    // load multiple images run callback function when all images loaded
     loadImages: function (sources, callback) {
         var images = {};
         var count = sources ? sources.length : 0;
@@ -84,6 +100,10 @@ var Game = {
 
     random: function (min, max) {
         return (min + (Math.random() * (max - min)));
+    },
+
+    randomChoice: function () {
+        return arguments[Math.floor(this.random(0, arguments.length))];
     },
 
     timestamp: function () { 
@@ -193,7 +213,7 @@ var Game = {
                 this.stats.update = Math.max(1, update);
                 this.stats.draw = Math.max(1, draw);
                 this.stats.frame = this.stats.update + this.stats.draw;
-                this.stats.count = this.stats.count == this.fps ? 0 : this.stats.count + 1;
+                this.stats.count = (this.stats.count === this.fps) ? 0 : this.stats.count + 1;
                 this.stats.fps = Math.min(this.fps, 1000 / this.stats.frame);
             }
         },
@@ -201,7 +221,7 @@ var Game = {
         drawStats: function (ctx) {
             if (this.config.stats) {
                 ctx.fillStyle = 'white';
-                ctx.font = '9pt Courier';
+                ctx.font = '12px Courier';
                 ctx.fillText("frame: " + this.stats.count, this.width - 100, this.height - 75);
                 ctx.fillText("fps: " + this.stats.fps, this.width - 100, this.height - 60);
                 ctx.fillText("update: " + this.stats.update + "ms", this.width - 100, this.height - 45);
