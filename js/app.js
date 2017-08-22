@@ -1,10 +1,10 @@
 var Pong = {
 
     Defaults: {
-        // canvas width that will scale with browswer via @media css queries
+        // fetch current browser width
         width: window.innerWidth,
 
-        // canvas height that will scale with browswer via @media css queries
+        // fetch current browser height
         height: window.innerHeight,
 
         // tell Game.Runner to show stats
@@ -29,7 +29,7 @@ var Pong = {
         this.runner.start();
     },
 
-    // does dt stand for delta time?
+    // dt stands for delta time
     update: function (dt) {
         this.time += dt;
     },
@@ -40,7 +40,7 @@ var Pong = {
         ctx.strokeRect(0, 0, this.width, this.height);
 
         ctx.fillStyle = 'white';
-        ctx.font = '144px sans-serif';
+        ctx.font = '144px Courier';
 
         var count = Math.round(this.time).toString();
         var dim = ctx.measureText(count);

@@ -1,32 +1,7 @@
 // game runner designed to provide canvas and library methods for multiple
 // types of games
 
-// implement ES5 methods for older browsers --------------------------------------
-// if (!Function.prototype.bind) {
-//     console.log('necessary?');
-//     Function.prototype.bind = function (obj) {
-//         var slice = [].slice,
-//         args = slice.call(arguments, 1),
-//         self = this,
-//         nop = function () {},
-//         bound = function () {
-//             return self.apply(this instanceof nop ? this : (obj || {}), args.concat(slice.call(arguments)));   
-//         };
-//         nop.prototype = self.prototype;
-//         bound.prototype = new nop();
-//         return bound;
-//   };
-// }
-
-// if (!Object.create) {
-//     console.log('necessary?');
-//     Object.create = function (base) {
-//         function F() {};
-//         F.prototype = base;
-//         return new F();
-//     };
-// }
-
+// implement ES5 methods for compatibility ---------------------------------------
 if (!Object.construct) {
     Object.construct = function(base) {
         var instance = Object.create(base);
@@ -79,7 +54,7 @@ var Game = {
         return document.createElement('canvas');
     },
 
-    // createAudio: function(src) {
+    // createAudio: function (src) {
     //     try {
     //         var a = new Audio(src);
     //         a.volume = 0.1; // lets be real quiet please
@@ -197,7 +172,7 @@ var Game = {
             this.game.draw(this.back2d);
 
             // debugging only
-            this.drawStats(this.back2d);
+            if (debugMode) this.drawStats(this.back2d);
 
             this.front2d.clearRect(0, 0, this.width, this.height);
             this.front2d.drawImage(this.back, 0, 0);
@@ -223,11 +198,10 @@ var Game = {
             }
         },
 
-        // debugging only
         drawStats: function (ctx) {
             if (this.config.stats) {
                 ctx.fillStyle = 'white';
-                ctx.font = '9pt sans-serif';
+                ctx.font = '9pt Courier';
                 ctx.fillText("frame: " + this.stats.count, this.width - 100, this.height - 75);
                 ctx.fillText("fps: " + this.stats.fps, this.width - 100, this.height - 60);
                 ctx.fillText("update: " + this.stats.update + "ms", this.width - 100, this.height - 45);
@@ -257,10 +231,6 @@ var Game = {
         showCursor: function () {
             this.canvas.style.cursor = 'auto';
         }
-
-        // alert blocks thread so need custom message, or avoid
-
-        // confirm blocks thread so need custom message, or avoid
 
     }
 
