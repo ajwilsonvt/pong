@@ -1,7 +1,7 @@
 /**
  * http://codeincomplete.com/
  * Game Runner Loop
- * Intialize the runner
+ * Initialize the runner
  * Construct canvas front and back buffers
  * Construct a game instance
  * Start a 60 fps loop and on each iteration:
@@ -77,24 +77,8 @@ var Game = {
             a.volume = 0.1;
             return a;
         } catch (e) {
+            console.log(e);
             return null;
-        }
-    },
-
-    // load multiple images run callback function when all images loaded
-    loadImages: function (sources, callback) {
-        var images = {};
-        var count = sources ? sources.length : 0;
-        if (count == 0) {
-            callback(images);
-        } else {
-            for (let i = 0; i < sources.length; i++) {
-                var source = sources[i];
-                var image = document.createElement('img');
-                images[source] = image;
-                this.addEvent(image, 'load', function () { if (--count == 0) callback(images); });
-                image.src = source;
-            }
         }
     },
 
@@ -131,7 +115,7 @@ var Game = {
         TWO:      50,
         A:        65,
         L:        76,
-        P:        80,
+        O:        79,
         Q:        81,
         TILDE:    192
     },
@@ -190,10 +174,7 @@ var Game = {
         draw: function () {
             this.back2d.clearRect(0, 0, this.width, this.height);
             this.game.draw(this.back2d);
-
-            // debugging only
-            if (debugMode) this.drawStats(this.back2d);
-
+            this.drawStats(this.back2d);
             this.front2d.clearRect(0, 0, this.width, this.height);
             this.front2d.drawImage(this.back, 0, 0);
         },
@@ -213,7 +194,8 @@ var Game = {
                 this.stats.update = Math.max(1, update);
                 this.stats.draw = Math.max(1, draw);
                 this.stats.frame = this.stats.update + this.stats.draw;
-                this.stats.count = (this.stats.count === this.fps) ? 0 : this.stats.count + 1;
+                this.stats.count = (this.stats.count === this.fps) ?
+                        0 : this.stats.count + 1;
                 this.stats.fps = Math.min(this.fps, 1000 / this.stats.frame);
             }
         },
@@ -222,10 +204,14 @@ var Game = {
             if (this.config.stats) {
                 ctx.fillStyle = 'white';
                 ctx.font = '12px Courier';
-                ctx.fillText("frame: " + this.stats.count, this.width - 100, this.height - 75);
-                ctx.fillText("fps: " + this.stats.fps, this.width - 100, this.height - 60);
-                ctx.fillText("update: " + this.stats.update + "ms", this.width - 100, this.height - 45);
-                ctx.fillText("draw: " + this.stats.draw   + "ms", this.width - 100, this.height - 30);
+                ctx.fillText('frame: ' + this.stats.count, this.width - 100,
+                        this.height - 75);
+                ctx.fillText('fps: ' + this.stats.fps, this.width - 100,
+                        this.height - 60);
+                ctx.fillText('update: ' + this.stats.update + 'ms',
+                        this.width - 100, this.height - 45);
+                ctx.fillText('draw: ' + this.stats.draw   + 'ms',
+                        this.width - 100, this.height - 30);
             }
         },
 
@@ -234,14 +220,14 @@ var Game = {
             Game.addEvent(document, 'keyup', this.onkeyup.bind(this));
         },
 
-        onkeydown: function (ev) {
+        onkeydown: function (e) {
             if (this.game.onkeydown)
-                this.game.onkeydown(ev.keyCode);
+                this.game.onkeydown(e.keyCode);
         },
     
-        onkeyup: function (ev) {
+        onkeyup: function (e) {
             if (this.game.onkeyup)
-                this.game.onkeyup(ev.keyCode);
+                this.game.onkeyup(e.keyCode);
         },
 
         hideCursor: function () {
