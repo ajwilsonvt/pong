@@ -1,5 +1,6 @@
 /**
  * Logic for the overall game
+ * Based on logic from: http://codeincomplete.com/
  */
 var Pong = {
 
@@ -15,7 +16,7 @@ var Pong = {
         ballRadius: 6, // default 5
 
         // debug mode
-        stats: false
+        stats: true
     },
 
     initialize: function (runner, config) {

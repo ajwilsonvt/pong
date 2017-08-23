@@ -1,5 +1,3 @@
-var temp; //debug
-
 /**
  * http://codeincomplete.com/
  * Game Runner Loop

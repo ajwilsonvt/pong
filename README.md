@@ -33,3 +33,7 @@ todo
 ## Bugs
 
 todo
+
+## References
+
+`http://codeincomplete.com/` was a very important resource for creation of this game.
