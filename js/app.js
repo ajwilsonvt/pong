@@ -15,7 +15,7 @@ var Pong = {
         ballRadius: 6, // default 5
 
         // debug mode
-        stats: true
+        stats: false
     },
 
     initialize: function (runner, config) {
@@ -100,8 +100,7 @@ var Pong = {
         this.court.draw(ctx, this.scores[0], this.scores[1]);
         this.leftPaddle.draw(ctx);
         this.rightPaddle.draw(ctx);
-        if (this.playing)
-            this.ball.draw(ctx);
+        if (this.playing) this.ball.draw(ctx);
     },
 
     onkeydown: function (keyCode) {
@@ -179,12 +178,12 @@ var Pong = {
             this.minY = pong.config.wallWidth;
             this.maxY = pong.height - pong.config.wallWidth - this.height;
             this.speed = (this.maxY - this.minY) / pong.config.paddleSpeed;
-            this.setpos((rhs) ? (pong.width - this.width) : 0,
+            this.setPos((rhs) ? (pong.width - this.width) : 0,
                     this.minY + (this.maxY - this.minY)/2);
-            this.setdir(0);
+            this.setDir(0);
         },
 
-        setpos: function (x, y) {
+        setPos: function (x, y) {
             this.x = x;
             this.y = y;
             this.left = this.x;
@@ -193,7 +192,7 @@ var Pong = {
             this.bottom = this.y + this.height;
         },
 
-        setdir: function (dy) {
+        setDir: function (dy) {
             this.up = ((dy < 0) ? -dy : 0);
             this.down = ((dy > 0) ? dy : 0);
         },
@@ -208,7 +207,7 @@ var Pong = {
                     y = this.maxY;
                 }
 
-                this.setpos(this.x, y);
+                this.setPos(this.x, y);
             }
         },
 
@@ -249,21 +248,22 @@ var Pong = {
             this.maxY = pong.height - pong.config.wallWidth - this.radius;
             this.speed = (this.maxX - this.minX) / pong.config.ballSpeed;
             this.accel = pong.config.ballAccel;
-            this.sameCurve = false;
-            this.oppCurve = false;
+            this.curve = false;
+            this.opposite = false;
         },
 
         reset: function (playerNum) {
-            this.sameCurve = false;
-            this.oppCurve = false;
+            // remove curve
+            this.curve = false;
+            this.opposite = false;
 
-            this.setpos((playerNum === 1) ? this.maxX : this.minX,
+            this.setPos((playerNum === 1) ? this.maxX : this.minX,
                     Game.random(this.minY, this.maxY));
-            this.setdir((playerNum === 1) ? -this.speed : this.speed,
+            this.setDir((playerNum === 1) ? -this.speed : this.speed,
                     this.speed);
         },
 
-        setpos: function (x, y) {
+        setPos: function (x, y) {
             this.x = x;
             this.y = y;
             this.left = this.x - this.radius;
@@ -272,91 +272,76 @@ var Pong = {
             this.bottom = this.y + this.radius;
         },
 
-        setdir: function(dx, dy) {
+        setDir: function(dx, dy) {
             this.dx = dx;
             this.dy = dy;
         },
 
         update: function (dt, leftPaddle, rightPaddle) {
             var pos = Pong.Helper.accelerate(this, this.x, this.y, this.dx, this.dy,
-                    this.accel, this.sameCurve, this.oppCurve, dt);
+                    this.accel, dt);
 
             if ((pos.dy > 0) && (pos.y > this.maxY)) {
                 pos.y = this.maxY;
-                pos.dy *= -1;
-                this.sameCurve = false;
-                this.oppCurve = false;
+                pos.dy = Pong.Helper.bounce(pos.dy);
             } else if ((pos.dy < 0) && (pos.y < this.minY)) {
                 pos.y = this.minY;
-                pos.dy *= -1;
-                this.sameCurve = false;
-                this.oppCurve = false;
+                pos.dy = Pong.Helper.bounce(pos.dy);
             }
 
             var paddle = (pos.dx < 0) ? leftPaddle : rightPaddle;
             var pt = Pong.Helper.ballIntercept(this, paddle, pos.newX, pos.newY);
             if (pt) {
+                var debugPaddleStr = 'paddle';
+
                 switch (pt.d) {
                     case 'left':
                     case 'right':
                         pos.x = pt.x;
-                        pos.dx *= -1;
+                        pos.dx = Pong.Helper.bounce(pos.dx);
+
+                        // make angle steeper to make game interesting
+                        if (pos.dy >= -20 && pos.dy <= 20) {
+                            console.log('too horizontal');
+                            pos.dy *= 15;
+                            this.curve = false;
+                            this.opposite = false;
+                        }
+
                         break;
                     case 'top':
                     case 'bottom':
                         pos.y = pt.y;
-                        pos.dy *= -1;
-                        this.sameCurve = false;
-                        this.oppCurve = false;
+                        pos.dy = Pong.Helper.bounce(pos.dx);
+
+                        // make angle steeper to make game more interesting
+                        if (pos.dy >= -20 && pos.dy <= 20) {
+                            console.log('too horizontal');
+                            pos.dy *= 15;
+                            this.curve = false;
+                            this.opposite = false;
+                        }
+
                         break;
                 }
 
-                if (paddle.up) {
-                    console.log('paddle up', pos.dy);
-
-                    // -dy means ball is moving up
-                    // halve dy if paddle is also moving up
-                    // 1.5x dy if ball is moving down (opposite dir of paddle)
-                    // pos.dy *= ((pos.dy < 0) ? 0.5 : 1.5);
-
-                    if (pos.dy < 0) {
-                        // both moving in same upwards direction
-                        // curve the ball so that y shrinks from upwards travel to horizontal
-                        this.sameCurve = true;
-                    } else {
-                        // ball moving down and paddle moving up
-                        // return the ball back at same angle received but upward and curve towards horizontal
-                        this.oppCurve = true;
-                    }
-                } else if (paddle.down) {
-                    console.log('paddle down', pos.dy);
-
-                    // dy means ball is moving down
-                    // halve dy if paddle is also moving down
-                    // 1.5x dy if ball is moving up (opposite dir of paddle)
-                    // pos.dy *= ((pos.dy > 0) ? 0.5 : 1.5);
-
-                    if (pos.dy > 0) {
-                        // both moving in same downwards direction
-                        // curve the ball so that y shrinks from downwards travel to horizontal
-                        this.sameCurve = true;
-                    } else {
-                        // ball moving up and paddle moving down
-                        // return the ball back at same angle received but downward and curve towards horizontal
-                        this.oppCurve = true;
-                    }
+                if (paddle.up || paddle.down) this.curve = true;
+                if ((paddle.up && pos.dy > 0) || (paddle.down && pos.dy < 0)) {
+                    // paddle and ball moving in opposite directions
+                    this.opposite = true;
                 }
 
-                this.sameCurve = false;
-                this.oppCurve = false;
-                console.log('paddle', pos.dy);
+                if (paddle.up) debugPaddleStr += ' up';
+                else if (paddle.down) debugPaddleStr += ' down';
+
+                console.log(debugPaddleStr, pos.dy);
             }
 
-            this.setpos(pos.x, pos.y);
-            this.setdir(pos.dx, pos.dy);
+            this.setPos(pos.x, pos.y);
+            this.setDir(pos.dx, pos.dy);
 
             // debugging
-            if (this.config.stats && debug.count === 0)
+            if (Pong.Defaults.stats && debug.count === 0)
                 console.log('ball position', pos);
         },
 
@@ -365,7 +350,7 @@ var Pong = {
             var h = w;
             ctx.fillStyle = 'white';
             ctx.fillRect(this.x - this.radius, this.y - this.radius, w, h);
-        }
+        },
 
     },
 
@@ -374,23 +359,17 @@ var Pong = {
      */
     Helper: {
 
-        accelerate: function (ball, x, y, dx, dy, accel, sameCurve, oppCurve, dt) {
+        // TODO: mathematical explanation
+        accelerate: function (ball, x, y, dx, dy, accel, dt) {
             var x2  = x + (dt * dx) + (accel * dt * dt * 0.5);
             var y2 = y + (dt * dy) + (accel * dt * dt * 0.5);
             var dx2 = dx + (accel * dt) * ((dx > 0) ? 1 : -1);
             
             var dy2 = dy + (accel * dt) * ((dy > 0) ? 1 : -1);
-            if (sameCurve || oppCurve) {
-                // if (dy2 >= -15 && dy2 <= 15) {
-                //     dy2 *= 5;
-                //     ball.sameCurve = false;
-                //     ball.oppCurve = false;
-                // }
-                dy2 *= 0.99;
-            }
-            if (oppCurve) {
+            if (ball.curve) dy2 *= 0.99;
+            if (ball.opposite) {
                 dy2 *= -1;
-                ball.oppCurve = false;
+                ball.opposite = false;
             }
 
             var result = {
@@ -405,6 +384,13 @@ var Pong = {
             return result;
         },
 
+        bounce: function (pos) {
+            this.curve = false;
+            this.opposite = false;
+            return -pos;
+        },
+
+        // TODO: mathematical explanation
         intercept: function(x1, y1, x2, y2, x3, y3, x4, y4, d) {
             var denom = ((y4 - y3) * (x2 - x1)) - ((x4 - x3) * (y2 - y1));
             
@@ -428,6 +414,7 @@ var Pong = {
             return null;
         },
 
+        // TODO: explanation and refactor
         ballIntercept: function (ball, rect, newX, newY) {
             var pt;
 
