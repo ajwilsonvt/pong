@@ -6,16 +6,16 @@ var Pong = {
     Defaults: {
         width: window.innerWidth,
         height: window.innerHeight,
-        wallWidth: 6,
-        paddleWidth: 12,
-        paddleHeight: 60,
-        paddleSpeed: 2,
-        ballSpeed: 4,
-        ballAccel: 8,
-        ballRadius: 5,
+        wallWidth: 6, // default 6
+        paddleWidth: 12, // default 12
+        paddleHeight: 60, // default 60
+        paddleSpeed: 2.75, // default 2
+        ballSpeed: 5, // default 4, lower is faster
+        ballAccel: 6, // default 8
+        ballRadius: 6, // default 5
 
         // debug mode
-        stats: false
+        stats: true
     },
 
     initialize: function (runner, config) {
@@ -63,15 +63,20 @@ var Pong = {
     },
 
     goal: function (playerNum) {
+        // add 1 to winner's score
         this.scores[playerNum] += 1;
         if (this.scores[playerNum] === 11) {
+            // game over
             console.log('winner ', playerNum);
             this.stop();
-        } else {
+        } else { // winner serves
             this.ball.reset(playerNum);
         }
+
+        console.log(this.scores);
     },
 
+    // update position for paddle and ball
     // dt stands for delta time
     update: function (dt) {
         this.leftPaddle.update(dt, this.ball);
@@ -81,6 +86,7 @@ var Pong = {
             var dy = this.ball.dy;
             this.ball.update(dt, this.leftPaddle, this.rightPaddle);
 
+            // if ball reaches left or right boundary, someone scored
             if (this.ball.left > this.width) {
                 this.goal(0);
             } else if (this.ball.right < 0) {
@@ -91,36 +97,11 @@ var Pong = {
 
     // draw the canvas (ctx stands for context)
     draw: function (ctx) {
-        // part 3 =========================================
         this.court.draw(ctx, this.scores[0], this.scores[1]);
         this.leftPaddle.draw(ctx);
         this.rightPaddle.draw(ctx);
         if (this.playing)
             this.ball.draw(ctx);
-
-        // bouncing ball app ==============================
-        // this.court.draw(ctx);
-        // for (let i = 0; i < this.balls.length; i++) {
-        //     this.balls[i].draw(ctx);
-        // }
-
-        // counting app ===================================
-        // ctx.strokeStyle = 'white';
-        // ctx.strokeRect(0, 0, this.width, this.height);
-
-        // ctx.fillStyle = 'white';
-        // ctx.font = '144px Courier';
-
-        // var count = Math.round(this.time).toString();
-        // var dim = ctx.measureText(count);
-
-        // // measureText returns a width, now add a height
-        // dim.height = dim.height || 100;
-        
-        // var x = (this.width - dim.width) / 2;
-        // var y = (this.height - dim.height) / 2;
-
-        // ctx.fillText(count, x, y + dim.height);
     },
 
     onkeydown: function (keyCode) {
@@ -173,15 +154,6 @@ var Pong = {
 
             // bottom wall
             this.walls.push({x: 0, y: h - ww, width: w, height: ww});
-
-            this.score1 = {
-                x: (w / 2) - (w / 14),
-                y: 10 * ww
-            };
-            this.score2 = {
-                x: (w / 2) + (w / 14),
-                y: 10 * ww
-            };
         },
 
         draw: function (ctx, scorePlayer1, scorePlayer2) {
@@ -190,10 +162,6 @@ var Pong = {
                 ctx.fillRect(this.walls[i].x, this.walls[i].y,
                         this.walls[i].width, this.walls[i].height);
             }
-
-            ctx.font = '65px Courier';
-            ctx.fillText(scorePlayer1, this.score1.x, this.score1.y);
-            ctx.fillText(scorePlayer2, this.score2.x, this.score2.y);
         }
 
     },
@@ -281,9 +249,14 @@ var Pong = {
             this.maxY = pong.height - pong.config.wallWidth - this.radius;
             this.speed = (this.maxX - this.minX) / pong.config.ballSpeed;
             this.accel = pong.config.ballAccel;
+            this.sameCurve = false;
+            this.oppCurve = false;
         },
 
         reset: function (playerNum) {
+            this.sameCurve = false;
+            this.oppCurve = false;
+
             this.setpos((playerNum === 1) ? this.maxX : this.minX,
                     Game.random(this.minY, this.maxY));
             this.setdir((playerNum === 1) ? -this.speed : this.speed,
@@ -305,19 +278,86 @@ var Pong = {
         },
 
         update: function (dt, leftPaddle, rightPaddle) {
-            pos = Pong.Helper.accelerate(this.x, this.y, this.dx, this.dy,
-                    this.accel, dt);
+            var pos = Pong.Helper.accelerate(this, this.x, this.y, this.dx, this.dy,
+                    this.accel, this.sameCurve, this.oppCurve, dt);
 
             if ((pos.dy > 0) && (pos.y > this.maxY)) {
                 pos.y = this.maxY;
                 pos.dy *= -1;
+                this.sameCurve = false;
+                this.oppCurve = false;
             } else if ((pos.dy < 0) && (pos.y < this.minY)) {
                 pos.y = this.minY;
                 pos.dy *= -1;
+                this.sameCurve = false;
+                this.oppCurve = false;
+            }
+
+            var paddle = (pos.dx < 0) ? leftPaddle : rightPaddle;
+            var pt = Pong.Helper.ballIntercept(this, paddle, pos.newX, pos.newY);
+            if (pt) {
+                switch (pt.d) {
+                    case 'left':
+                    case 'right':
+                        pos.x = pt.x;
+                        pos.dx *= -1;
+                        break;
+                    case 'top':
+                    case 'bottom':
+                        pos.y = pt.y;
+                        pos.dy *= -1;
+                        this.sameCurve = false;
+                        this.oppCurve = false;
+                        break;
+                }
+
+                if (paddle.up) {
+                    console.log('paddle up', pos.dy);
+
+                    // -dy means ball is moving up
+                    // halve dy if paddle is also moving up
+                    // 1.5x dy if ball is moving down (opposite dir of paddle)
+                    // pos.dy *= ((pos.dy < 0) ? 0.5 : 1.5);
+
+                    if (pos.dy < 0) {
+                        // both moving in same upwards direction
+                        // curve the ball so that y shrinks from upwards travel to horizontal
+                        this.sameCurve = true;
+                    } else {
+                        // ball moving down and paddle moving up
+                        // return the ball back at same angle received but upward and curve towards horizontal
+                        this.oppCurve = true;
+                    }
+                } else if (paddle.down) {
+                    console.log('paddle down', pos.dy);
+
+                    // dy means ball is moving down
+                    // halve dy if paddle is also moving down
+                    // 1.5x dy if ball is moving up (opposite dir of paddle)
+                    // pos.dy *= ((pos.dy > 0) ? 0.5 : 1.5);
+
+                    if (pos.dy > 0) {
+                        // both moving in same downwards direction
+                        // curve the ball so that y shrinks from downwards travel to horizontal
+                        this.sameCurve = true;
+                    } else {
+                        // ball moving up and paddle moving down
+                        // return the ball back at same angle received but downward and curve towards horizontal
+                        this.oppCurve = true;
+                    }
+                }
+
+                this.sameCurve = false;
+                this.oppCurve = false;
+                console.log('paddle', pos.dy);
             }
 
             this.setpos(pos.x, pos.y);
             this.setdir(pos.dx, pos.dy);
+
+            // debugging
+            if (this.config.stats && debug.count === 0)
+                console.log('ball position', pos);
         },
 
         draw: function (ctx) {
@@ -334,11 +374,24 @@ var Pong = {
      */
     Helper: {
 
-        accelerate: function (x, y, dx, dy, accel, dt) {
+        accelerate: function (ball, x, y, dx, dy, accel, sameCurve, oppCurve, dt) {
             var x2  = x + (dt * dx) + (accel * dt * dt * 0.5);
-            var y2  = y + (dt * dy) + (accel * dt * dt * 0.5);
+            var y2 = y + (dt * dy) + (accel * dt * dt * 0.5);
             var dx2 = dx + (accel * dt) * ((dx > 0) ? 1 : -1);
+            
             var dy2 = dy + (accel * dt) * ((dy > 0) ? 1 : -1);
+            if (sameCurve || oppCurve) {
+                // if (dy2 >= -15 && dy2 <= 15) {
+                //     dy2 *= 5;
+                //     ball.sameCurve = false;
+                //     ball.oppCurve = false;
+                // }
+                dy2 *= 0.99;
+            }
+            if (oppCurve) {
+                dy2 *= -1;
+                ball.oppCurve = false;
+            }
 
             var result = {
                 newX: (x2 - x),
@@ -350,6 +403,73 @@ var Pong = {
             };
 
             return result;
+        },
+
+        intercept: function(x1, y1, x2, y2, x3, y3, x4, y4, d) {
+            var denom = ((y4 - y3) * (x2 - x1)) - ((x4 - x3) * (y2 - y1));
+            
+            if (denom !== 0) {
+                var ua = (((x4 - x3) * (y1 - y3)) - ((y4 - y3) * (x1 - x3))) /
+                        denom;
+            
+                if ((ua >= 0) && (ua <= 1)) {
+                    var ub = (((x2 - x1) *
+                            (y1 - y3)) - ((y2 - y1) * (x1 - x3))) / denom;
+                
+                    if ((ub >= 0) && (ub <= 1)) {
+                        var x = x1 + (ua * (x2 - x1));
+                        var y = y1 + (ua * (y2 - y1));
+
+                        return { x: x, y: y, d: d };
+                    }
+                }
+            }
+          
+            return null;
+        },
+
+        ballIntercept: function (ball, rect, newX, newY) {
+            var pt;
+
+            if (newX < 0) {
+                pt = Pong.Helper.intercept(ball.x, ball.y, ball.x + newX,
+                        ball.y + newY,
+                        rect.right + ball.radius,
+                        rect.top - ball.radius,
+                        rect.right + ball.radius,
+                        rect.bottom + ball.radius,
+                        'right');
+            } else if (newX > 0) {
+                pt = Pong.Helper.intercept(ball.x, ball.y, ball.x + newX,
+                        ball.y + newY,
+                        rect.left - ball.radius,
+                        rect.top - ball.radius,
+                        rect.left - ball.radius,
+                        rect.bottom + ball.radius,
+                        'left');
+            }
+          
+            if (!pt) {
+                if (newY < 0) {
+                    pt = Pong.Helper.intercept(ball.x, ball.y, ball.x + newX,
+                            ball.y + newY,
+                            rect.left - ball.radius,
+                            rect.bottom + ball.radius,
+                            rect.right  + ball.radius,
+                            rect.bottom + ball.radius,
+                            'bottom');
+                } else if (newY > 0) {
+                    pt = Pong.Helper.intercept(ball.x, ball.y, ball.x + newX,
+                            ball.y + newY,
+                            rect.left - ball.radius,
+                            rect.top - ball.radius,
+                            rect.right + ball.radius,
+                            rect.top - ball.radius,
+                            'top');
+                }
+            }
+          
+            return pt;
         }
 
     }

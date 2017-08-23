@@ -1,3 +1,5 @@
+var temp; //debug
+
 /**
  * http://codeincomplete.com/
  * Game Runner Loop
@@ -36,6 +38,11 @@ if (!Object.extend) {
         return destination;
     };
 }
+
+/** ===========================================================================
+ * Global variables
+ */
+var debug;
 
 /** ===========================================================================
  * Library for game logic
@@ -169,6 +176,9 @@ var Game = {
 
         update: function (dt) {
             this.game.update(dt);
+
+            // debugging
+            debug = this.stats;
         },
 
         draw: function () {
