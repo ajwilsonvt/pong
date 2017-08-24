@@ -2,8 +2,18 @@
  * Logic for the overall game
  * Based on logic from: http://codeincomplete.com/
  *
- * My largest contributions:
+ * "Library functions" marked in code below are not required to be
+ * read (following principle of abstraction), still provided some comments
+ * for these functions for readability
  * 
+ * Enable debug mode by setting Pong.Defaults.stats to 'true' for verbose
+ * console logs and framerate counter on the window
+ *
+ * My largest contributions:
+ *   99% of documentation is mine, only a few comments directly from
+ *       http://codeincomplete.com/
+ *   Curve/ spin logic is completely mine (ball arcs towards horizontal)
+ *     Steep angle hit after flat return logic is completely mine
  */
 var Pong = {
 
@@ -22,6 +32,9 @@ var Pong = {
         stats: false
     },
 
+    /**
+     * Skill levels for the AI
+     */
     Levels: [
         {aiReaction: 0.2, aiError:  40}, // 0: best skill level
         {aiReaction: 0.3, aiError:  50},
@@ -136,7 +149,15 @@ var Pong = {
     level: function (playerNum) {
         // if this losing, improve (decrease level) by adding negative deficit
         // if this winning, worsen (increase level) by adding positive spread
-        return 8 + (this.scores[playerNum] - this.scores[playerNum ? 0 : 1]);
+        var newLevel = 8 + (this.scores[playerNum] - this.scores[playerNum ? 0 : 1]);
+
+        // maximum level of 16
+        newLevel = (newLevel >= 16) ? 16 : newLevel;
+
+        // minimum level of 4
+        newLevel = (newLevel <= 4) ? 4 : newLevel;
+
+        return newLevel;
     },
 
     /**
@@ -463,7 +484,7 @@ var Pong = {
         },
 
         /**
-         * Draw a ball
+         * Draw a paddle
          */
         draw: function (ctx) {
             ctx.fillStyle = 'white';
@@ -568,7 +589,7 @@ var Pong = {
             var paddle = (pos.dx < 0) ? leftPaddle : rightPaddle;
 
             // find out if paddle and ball have collided
-            var pt = Pong.Helper.ballIntercept(this, paddle, pos.newX, pos.newY);
+            var pt = Pong.Helper.ballIntercept(this, paddle, pos.nx, pos.ny);
 
             if (pt) {
                 // paddle and ball have collided
@@ -576,14 +597,17 @@ var Pong = {
                 // for debugging
                 var debugPaddleStr = 'paddle';
 
-                switch (pt.d) {
+                switch (pt.direction) {
+                    // direction is direction of ball after hit
+
                     case 'left':
                     case 'right':
                         pos.x = pt.x;
                         pos.dx = Pong.Helper.bounce(pos.dx);
 
-                        // make angle steeper to make game interesting
+                        // if ball is flat, make angle steeper on this hit
                         if (pos.dy >= -20 && pos.dy <= 20) {
+                            // for debugging
                             if (Pong.Defaults.stats)
                                     console.log('too horizontal');
                             pos.dy *= 15;
@@ -594,40 +618,39 @@ var Pong = {
                         break;
                     case 'top':
                     case 'bottom':
+                        // handle futile bounce off top or bottom edge
+
                         pos.y = pt.y;
                         pos.dy = Pong.Helper.bounce(pos.dx);
-
-                        // make angle steeper to make game more interesting
-                        if (pos.dy >= -20 && pos.dy <= 20) {
-                            if (Pong.Defaults.stats)
-                                    console.log('too horizontal');
-                            pos.dy *= 15;
-                            this.curve = false;
-                            this.opposite = false;
-                        }
-
                         break;
                 }
 
+                // if paddle is moving during hit, add a curve
                 if (paddle.up || paddle.down) this.curve = true;
+
                 if ((paddle.up && pos.dy > 0) || (paddle.down && pos.dy < 0)) {
                     // paddle and ball moving in opposite directions
                     this.opposite = true;
                 }
 
+                // for debugging
                 if (paddle.up) debugPaddleStr += ' up';
                 else if (paddle.down) debugPaddleStr += ' down';
-
                 if (Pong.Defaults.stats) console.log(debugPaddleStr, pos.dy);
             }
 
+            // set new position and direction of ball
             this.setPos(pos.x, pos.y);
             this.setDir(pos.dx, pos.dy);
 
+            // for debugging
             if (Pong.Defaults.stats && debug.count === 0)
                 console.log('ball position', pos);
         },
 
+        /**
+         * Draw a ball
+         */
         draw: function (ctx) {
             var w = this.radius * 2;
             var h = w;
@@ -642,7 +665,13 @@ var Pong = {
      */
     Helper: {
 
-        // TODO: mathematical explanation
+        /**
+         * Library function from http://codeincomplete.com/
+         * dx and dy represent speed of the ball
+         * nx and ny are the changes in those dimensions since last update
+         *
+         * Formula derived using kinematics
+         */
         accelerate: function (ball, x, y, dx, dy, accel, dt) {
             var x2  = x + (dt * dx) + (accel * dt * dt * 0.5);
             var y2 = y + (dt * dy) + (accel * dt * dt * 0.5);
@@ -656,8 +685,8 @@ var Pong = {
             }
 
             var result = {
-                newX: (x2 - x),
-                newY: (y2 - y),
+                nx: (x2 - x),
+                ny: (y2 - y),
                 x: x2,
                 y: y2,
                 dx: dx2,
@@ -667,14 +696,21 @@ var Pong = {
             return result;
         },
 
-        bounce: function (pos) {
+        /**
+         * My custom function to encapsulate bounce behavior
+         * Removes curve and returns the negative value of passed dimension
+         */
+        bounce: function (val) {
             this.curve = false;
             this.opposite = false;
-            return -pos;
+            return -val;
         },
 
-        // TODO: mathematical explanation
-        intercept: function(x1, y1, x2, y2, x3, y3, x4, y4, d) {
+        /**
+         * Library function from http://codeincomplete.com/
+         * Formula derived using "line segment intersect" method
+         */
+        intercept: function(x1, y1, x2, y2, x3, y3, x4, y4, dir) {
             var denom = ((y4 - y3) * (x2 - x1)) - ((x4 - x3) * (y2 - y1));
             
             if (denom !== 0) {
@@ -689,7 +725,7 @@ var Pong = {
                         var x = x1 + (ua * (x2 - x1));
                         var y = y1 + (ua * (y2 - y1));
 
-                        return { x: x, y: y, d: d };
+                        return { x: x, y: y, direction: dir };
                     }
                 }
             }
@@ -697,21 +733,25 @@ var Pong = {
             return null;
         },
 
-        // TODO: explanation and refactor
-        ballIntercept: function (ball, rect, newX, newY) {
+        /**
+         * Library function from http://codeincomplete.com/
+         */
+        ballIntercept: function (ball, rect, nx, ny) {
             var pt;
 
-            if (newX < 0) {
-                pt = Pong.Helper.intercept(ball.x, ball.y, ball.x + newX,
-                        ball.y + newY,
+            if (nx < 0) {
+                // ball is moving left, check right edge of Player 1's paddle
+                pt = Pong.Helper.intercept(ball.x, ball.y, ball.x + nx,
+                        ball.y + ny,
                         rect.right + ball.radius,
                         rect.top - ball.radius,
                         rect.right + ball.radius,
                         rect.bottom + ball.radius,
                         'right');
-            } else if (newX > 0) {
-                pt = Pong.Helper.intercept(ball.x, ball.y, ball.x + newX,
-                        ball.y + newY,
+            } else if (nx > 0) {
+                // ball is moving right, check left edge of Player 2's paddle
+                pt = Pong.Helper.intercept(ball.x, ball.y, ball.x + nx,
+                        ball.y + ny,
                         rect.left - ball.radius,
                         rect.top - ball.radius,
                         rect.left - ball.radius,
@@ -719,18 +759,21 @@ var Pong = {
                         'left');
             }
           
+            // enable futile bounce off top or bottom edge of paddle
             if (!pt) {
-                if (newY < 0) {
-                    pt = Pong.Helper.intercept(ball.x, ball.y, ball.x + newX,
-                            ball.y + newY,
+                if (ny < 0) {
+                    // ball is moving towards the top wall
+                    pt = Pong.Helper.intercept(ball.x, ball.y, ball.x + nx,
+                            ball.y + ny,
                             rect.left - ball.radius,
                             rect.bottom + ball.radius,
                             rect.right  + ball.radius,
                             rect.bottom + ball.radius,
                             'bottom');
-                } else if (newY > 0) {
-                    pt = Pong.Helper.intercept(ball.x, ball.y, ball.x + newX,
-                            ball.y + newY,
+                } else if (ny > 0) {
+                    // ball is moving towards bottom wall
+                    pt = Pong.Helper.intercept(ball.x, ball.y, ball.x + nx,
+                            ball.y + ny,
                             rect.left - ball.radius,
                             rect.top - ball.radius,
                             rect.right + ball.radius,
