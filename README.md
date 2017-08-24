@@ -46,6 +46,7 @@ Plain HTML, CSS, and JavaScript.
 ## Notes for developers
 
 1. Use `console.trace()` to trace the call stack for particular functions
+2. Copious comments provided in app.js
 
 ## References
 
