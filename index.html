@@ -7,17 +7,24 @@
     <title>Pong</title>
 </head>
 <body>
-    <div class="main">
-        <!-- <h1>Pong</h1>
-        <div class="instructions">
-            <h2>Instructions</h2>
-            <p>Press `1` for single player</p>
-            <p>Player 1 uses `q` to move up and `a` to move down</p>
-            <p>Press `2` for double player</p>
-            <p>Player 2 uses `o` to move up and `l` to move down</p>
-            <p>Press `0` for observe mode</p>
-            <p>Press `esc` to abandon a game</p>
-        </div> -->
+    <div class="modal">
+        <div>
+            <h2>Pong</h2>
+            <ul>
+                <li>Press 'I' to open and close this menu</li>
+                <li>Press '1' for single player</li>
+                <li class="tab player">Player 1 (LEFT)</li>
+                <li class="tab">'Q' to move up, 'A' to move down</li>
+                <li>Press '2' for double player</li>
+                <li class="tab player">Player 2 (RIGHT)</li>
+                <li class="tab">'O' to move up, 'L' to move down</li>
+                <li>Press '0' for observe mode</li>
+                <li>Press 'ESC' to abandon a game</li>
+            </ul>
+        </div>
+    </div>
+    <div class="score">0 - 0</div>
+    <div class="game-container">
         <canvas id="game"></canvas>
     </div>
 <script src="js/gamerunner.js"></script>

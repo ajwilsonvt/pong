@@ -1,10 +1,14 @@
 /**
  * http://codeincomplete.com/
  * Game Runner Loop
- * Initialize the runner
- * Construct canvas front and back buffers
- * Construct a game instance
- * Start a 60 fps loop and on each iteration:
+ * This is a library used to abstract away standard setup for a canvas game.
+ * Copious comments not included for that reason.
+ *
+ * Tasks:
+ *   Initialize the runner
+ *   Construct canvas front and back buffers
+ *   Construct a game instance
+ *   Start a 60 fps loop and on each iteration:
  *     - Call game.update() to provide dt timer interval since last frame
  *     - Call game.draw() to provide back buffer canvas context for drawing
  *     - Flip back and front buffers
@@ -15,8 +19,12 @@
  * Custom object methods
  */
 
-// wrapper for Object.create that allows arguments to be passed to a
-// constructor function
+/**
+ * Wrapper for Object.create that allows arguments to be passed to a
+ * constructor function
+ *
+ * Calls initialize() for Objects
+ */
 if (!Object.construct) {
     Object.construct = function(base) {
         var instance = Object.create(base);
@@ -26,7 +34,9 @@ if (!Object.construct) {
     };
 }
 
-// enable ability to copy all properties of one object to another
+/**
+ * Enable ability to copy all properties of one object to another
+ */
 if (!Object.extend) {
     Object.extend = function(destination, source) {
         for (var property in source) {
@@ -40,6 +50,8 @@ if (!Object.extend) {
 /** ===========================================================================
  * Global variables
  */
+
+// for debugging
 var debug;
 
 /** ===========================================================================
@@ -54,6 +66,7 @@ var Game = {
                Function.bind;
     },
 
+    // Called in index.html using Game.ready(), which waits for DOM to load
     start: function (id, game, config) {
         if (this.compatible())
             return Object.construct(this.Runner, id, game, config).game;
@@ -74,17 +87,6 @@ var Game = {
 
     createCanvas: function () {
         return document.createElement('canvas');
-    },
-
-    createAudio: function (src) {
-        try {
-            var a = new Audio(src);
-            a.volume = 0.1;
-            return a;
-        } catch (e) {
-            console.log(e);
-            return null;
-        }
     },
 
     random: function (min, max) {
@@ -119,6 +121,7 @@ var Game = {
         ONE:      49,
         TWO:      50,
         A:        65,
+        I:        73,
         L:        76,
         O:        79,
         Q:        81,
@@ -148,8 +151,7 @@ var Game = {
             this.game = Object.construct(game, this, this.config);
         },
 
-        // game instance should call runner.start() when finished initializing
-        // and ready to start game loop
+        // Called in app.js in Pong.initialize()
         start: function () {
             this.lastFrame = Game.timestamp();
             this.timer = setInterval(this.loop.bind(this), this.interval);
@@ -175,7 +177,7 @@ var Game = {
         update: function (dt) {
             this.game.update(dt);
 
-            // debugging
+            // for debugging
             debug = this.stats;
         },
 

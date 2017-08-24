@@ -34,6 +34,10 @@ todo
 
 todo
 
+## Notes for developers
+
+1. Use `console.trace()` to trace the call stack for particular functions
+
 ## References
 
 `http://codeincomplete.com/` was a very important resource for creation of this game.

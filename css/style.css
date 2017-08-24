@@ -1,5 +1,67 @@
 body {
+    position: fixed;
     background-color: black;
     color: white;
     font-family: Courier, monospace;
+    z-index: 0;
+}
+
+h2, ul {
+    margin: 0;
+    padding: 0;
+}
+
+h2 {
+    margin-bottom: .25em;
+}
+
+ul {
+    list-style: none;
+    padding-left: 1em;
+}
+
+.modal {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    background: rgba(0,0,0,0.8);
+    opacity: 1;
+    -webkit-transition: opacity 400ms ease-in;
+       -moz-transition: opacity 400ms ease-in;
+            transition: opacity 400ms ease-in;
+    pointer-events: none;
+    z-index: 2;
+}
+
+.modal > div {
+    position: relative;
+    border-radius: 10px;
+    background: #999;
+    background: -moz-linear-gradient(#fff, #999);
+    background: -webkit-linear-gradient(#fff, #999);
+    background: -o-linear-gradient(#fff, #999);
+    color: black;
+    margin: 60px auto;
+    padding: 20px;
+    width: 400px;
+}
+
+.player {
+    font-weight: 700;
+    text-decoration: underline;
+}
+
+.score {
+    position: fixed;
+    top: 20px;
+    font-size: 80px;
+    text-align: center;
+    width: 100%;
+    z-index: 1;
+}
+
+.tab {
+    padding-left: 2em;
 }
