@@ -30,7 +30,7 @@ var Pong = {
         ballRadius: 6, // default 5
 
         // debug mode
-        stats: false
+        stats: true
     },
 
     /**
@@ -154,14 +154,14 @@ var Pong = {
     level: function (playerNum) {
         // if this losing, improve (decrease level) by adding negative deficit
         // if this winning, worsen (increase level) by adding positive spread
-        var newLevel = 8 + (this.scores[playerNum] -
+        var newLevel = 12 + (this.scores[playerNum] -
                 this.scores[(playerNum) ? 0 : 1]);
 
         // maximum level of 16
         newLevel = (newLevel >= 16) ? 16 : newLevel;
 
-        // minimum level of 4
-        newLevel = (newLevel <= 4) ? 4 : newLevel;
+        // minimum level of 8
+        newLevel = (newLevel <= 8) ? 8 : newLevel;
 
         return newLevel;
     },
