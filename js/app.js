@@ -30,7 +30,7 @@ var Pong = {
         ballRadius: 6, // default 5
 
         // debug mode
-        stats: true
+        stats: false
     },
 
     /**
