@@ -49,4 +49,4 @@ HTML Canvas, CSS, and Plain JavaScript.
 
 ## References
 
-[codeincomplete.com](http://codeincomplete.com) was a very important resource for creation of this game.
+The [codeincomplete.com/posts/javascript-pong/](http://codeincomplete.com/posts/javascript-pong/) tutorial was a very important resource for the creation of this game.

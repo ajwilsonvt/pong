@@ -1,6 +1,6 @@
 /**
  * Logic for the overall game
- * Based on logic from: http://codeincomplete.com/
+ * Based on logic from: http://http://codeincomplete.com/posts/javascript-pong/
  *
  * "Library functions" marked in code below are not required to be
  * read (following principle of abstraction), still provided some comments
