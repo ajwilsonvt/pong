@@ -1,6 +1,6 @@
 # pong
 
-A classic game.
+A classic game. Available online at [ajwilsonvt.github.io/pong](ajwilsonvt.github.io/pong).
 
 ## Rules
 
@@ -49,4 +49,4 @@ HTML Canvas, CSS, and Plain JavaScript.
 
 ## References
 
-`http://codeincomplete.com/` was a very important resource for creation of this game.
+[codeincomplete.com](codeincomplete.com) was a very important resource for creation of this game.
