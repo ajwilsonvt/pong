@@ -7,13 +7,14 @@
  * for these functions for readability
  * 
  * Enable debug mode by setting Pong.Defaults.stats to 'true' for verbose
- * console logs and framerate counter on the window
+ * console logs and frame rate counter on the window
  *
  * My largest contributions:
- *   99% of documentation is mine, only a few comments directly from
- *       http://codeincomplete.com/
- *   Curve/ spin logic is completely mine (ball arcs towards horizontal)
- *     Steep angle hit after flat return logic is completely mine
+ *   User interface: responsive fullscreen, animated modal window, pause mode
+ *   Spin/ curve logic (ball arcs towards horizontal)
+ *   Steep angle hit after flat return logic
+ *   99% of documentation, only a few comments from http://codeincomplete.com/
+ *     Usually paraphrased
  */
 var Pong = {
 
@@ -62,11 +63,11 @@ var Pong = {
         this.config = config;
         this.runner = runner;
 
-        // subtract 16 pixels to allow extra space to visualize borders
-        this.width = runner.width - 16;
-        this.height = runner.height - 16;
+        this.width = runner.width;
+        this.height = runner.height;
 
         // initialize game
+        this.status = 'pause';
         this.playing = false;
         this.scores = [0, 0];
 
@@ -104,13 +105,16 @@ var Pong = {
      * Starts game in 1 of 3 modes
      */
     start: function (numPlayers) {
-        if (!this.playing) {
+        if (this.status !== 'start' && this.status !== 'pause' &&
+                !this.playing) {
+            this.playing = true;
+
             // reset score
             this.scores = [0, 0];
             var score = document.getElementsByClassName('score')[0];
             score.textContent = `${this.scores[0]} - ${this.scores[1]}`;
 
-            this.playing = true;
+            this.status = 'start';
 
             // enable AI for respective game modes
             this.leftPaddle.setAuto((numPlayers < 1), this.level(0));
@@ -131,7 +135,8 @@ var Pong = {
      * Stop the game, disable AI, and show cursor
      */
     stop: function () {
-        if (this.playing) {
+        if (this.status === 'start' || this.status === 'restart') {
+            this.status = 'stop';
             this.playing = false;
 
             this.leftPaddle.setAuto(false, this.level(0));
@@ -149,7 +154,8 @@ var Pong = {
     level: function (playerNum) {
         // if this losing, improve (decrease level) by adding negative deficit
         // if this winning, worsen (increase level) by adding positive spread
-        var newLevel = 8 + (this.scores[playerNum] - this.scores[playerNum ? 0 : 1]);
+        var newLevel = 8 + (this.scores[playerNum] -
+                this.scores[(playerNum) ? 0 : 1]);
 
         // maximum level of 16
         newLevel = (newLevel >= 16) ? 16 : newLevel;
@@ -173,6 +179,7 @@ var Pong = {
             // game over
             console.log('winner ', playerNum);
             this.stop();
+            score.textContent = `Player ${playerNum + 1} wins`;
         } else {
             // winner serves
             this.ball.reset(playerNum);
@@ -194,9 +201,13 @@ var Pong = {
      * dt stands for delta time
      */
     update: function (dt) {
-        this.leftPaddle.update(dt, this.ball);
-        this.rightPaddle.update(dt, this.ball);
-        if (this.playing) {
+        // do not update paddle if game is paused
+        if (this.status !== 'pause') {
+            this.leftPaddle.update(dt, this.ball);
+            this.rightPaddle.update(dt, this.ball);
+        }
+        
+        if (this.status === 'start' || this.status === 'restart') {
             var dx = this.ball.dx;
             var dy = this.ball.dy;
             this.ball.update(dt, this.leftPaddle, this.rightPaddle);
@@ -218,7 +229,7 @@ var Pong = {
         this.court.draw(ctx, this.scores[0], this.scores[1]);
         this.leftPaddle.draw(ctx);
         this.rightPaddle.draw(ctx);
-        if (this.playing) this.ball.draw(ctx);
+        if (this.status !== 'stop') this.ball.draw(ctx);
     },
 
     /**
@@ -226,8 +237,17 @@ var Pong = {
      */
     toggleMenu: function () {
         var modal = document.getElementsByClassName('modal')[0];
-        if (modal.style.opacity !== '0') modal.style.opacity = 0;
-        else modal.style.opacity = 1;
+        if (modal.style.opacity !== '0') {
+            modal.style.opacity = 0;
+
+            // do not change status of stopped game
+            if (this.status !== 'stop') this.status = 'restart';
+        } else {
+            // pause and display modal
+            // do not change status of stopped game
+            if (this.status !== 'stop') this.status = 'pause';
+            modal.style.opacity = 1;
+        }
     },
 
     /**
@@ -666,9 +686,11 @@ var Pong = {
     Helper: {
 
         /**
-         * Library function from http://codeincomplete.com/
+         * Semi-Library function from http://codeincomplete.com/
          * dx and dy represent speed of the ball
          * nx and ny are the changes in those dimensions since last update
+         *
+         * My contribution: spin/ curve logic, arc behavior
          *
          * Formula derived using kinematics
          */
@@ -676,9 +698,13 @@ var Pong = {
             var x2  = x + (dt * dx) + (accel * dt * dt * 0.5);
             var y2 = y + (dt * dy) + (accel * dt * dt * 0.5);
             var dx2 = dx + (accel * dt) * ((dx > 0) ? 1 : -1);
-            
             var dy2 = dy + (accel * dt) * ((dy > 0) ? 1 : -1);
+
+            // geometric multiplication to curve ball towards horizontal in arc
             if (ball.curve) dy2 *= 0.99;
+
+            // if ball and paddle were moving in opposite directions bounce in
+            // opposite y-dimension direction from default behavior
             if (ball.opposite) {
                 dy2 *= -1;
                 ball.opposite = false;

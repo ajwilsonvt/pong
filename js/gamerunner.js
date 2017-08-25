@@ -60,7 +60,7 @@ var debug;
 var Game = {
 
     compatible: function () {
-        // return ES5 methods and custom object methods to check compatibility
+        // return custom object methods to check compatibility
         return Object.create &&
                Object.extend &&
                Function.bind;

@@ -3,6 +3,9 @@ body {
     background-color: black;
     color: white;
     font-family: Courier, monospace;
+    height: 100%;
+    margin: 0 auto;
+    width: 100%;
     z-index: 0;
 }
 
@@ -20,6 +23,17 @@ ul {
     padding-left: 1em;
 }
 
+canvas {
+    height: 100%;
+    width: 100%;
+}
+
+.game-container {
+    height: 97%;
+    margin: .75em auto;
+    width: 98%;
+}
+
 .modal {
     position: fixed;
     top: 0;
@@ -28,8 +42,8 @@ ul {
     left: 0;
     background: rgba(0,0,0,0.8);
     opacity: 1;
+    -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=100)";
     -webkit-transition: opacity 400ms ease-in;
-       -moz-transition: opacity 400ms ease-in;
             transition: opacity 400ms ease-in;
     pointer-events: none;
     z-index: 2;
@@ -39,9 +53,9 @@ ul {
     position: relative;
     border-radius: 10px;
     background: #999;
-    background: -moz-linear-gradient(#fff, #999);
     background: -webkit-linear-gradient(#fff, #999);
-    background: -o-linear-gradient(#fff, #999);
+    background:    -moz-linear-gradient(#fff, #999);
+    background:      -o-linear-gradient(#fff, #999);
     color: black;
     margin: 60px auto;
     padding: 20px;

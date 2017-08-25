@@ -10,7 +10,7 @@ A classic game.
 
 ## Technologies
 
-Plain HTML, CSS, and JavaScript.
+HTML Canvas, CSS, and Plain JavaScript.
 
 ## Development process
 
@@ -31,17 +31,16 @@ Plain HTML, CSS, and JavaScript.
 * Spin/ curve ball towards horizontal
 * Smash hit at steep angle if returning a flat ball
 * 3 modes: Observe AI, 1 Player, 2 Player
+* Pause menu
 
 ## Future features
 
 * Design for mobile (requires overhaul to handle touch events as opposed to keydown and keyup)
-* Improve aesthetics and responsiveness
 * Add sound
 
 ## Bugs
 
 * Currently in beta-testing
-* Fixable: Fix resolution and use media queries to make responsive and still somewhat fullscreen, currently resizing the window requires refresh to redraw canvas
 
 ## Notes for developers
 
