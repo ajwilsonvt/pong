@@ -4,8 +4,8 @@ body {
     color: white;
     font-family: Courier, monospace;
     height: 100%;
-    margin: 0 auto;
     width: 100%;
+    margin: 0 auto;
     z-index: 0;
 }
 
@@ -30,8 +30,8 @@ canvas {
 
 .game-container {
     height: 97%;
-    margin: .75em auto;
     width: 98%;
+    margin: .75em auto;
 }
 
 .modal {
@@ -42,7 +42,7 @@ canvas {
     left: 0;
     background: rgba(0,0,0,0.8);
     opacity: 1;
-    -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=100)";
+    -ms-filter: 'progid:DXImageTransform.Microsoft.Alpha(Opacity=100)';
     -webkit-transition: opacity 400ms ease-in;
             transition: opacity 400ms ease-in;
     pointer-events: none;

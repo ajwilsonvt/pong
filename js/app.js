@@ -1,6 +1,6 @@
 /**
  * Logic for the overall game
- * Based on logic from: http://http://codeincomplete.com/posts/javascript-pong/
+ * Based on logic from: http://codeincomplete.com/posts/javascript-pong/
  *
  * "Library functions" marked in code below are not required to be
  * read (following principle of abstraction), still provided some comments
@@ -26,7 +26,7 @@ var Pong = {
         paddleHeight: 60, // default 60
         paddleSpeed: 2, // default 2, lower is faster
         ballSpeed: 4, // default 4, lower is faster
-        ballAccel: 6, // default 8
+        ballAccel: 8, // default 8
         ballRadius: 6, // default 5
 
         // debug mode
@@ -585,7 +585,7 @@ var Pong = {
         },
 
         /**
-         * Logic for paddle movement each iteration of gamerunner.js loop
+         * Logic for ball movement each iteration of gamerunner.js loop
          * dt stands for delta time
          */
         update: function (dt, leftPaddle, rightPaddle) {

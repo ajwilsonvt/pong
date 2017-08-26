@@ -1,5 +1,5 @@
 /**
- * http://http://codeincomplete.com/posts/javascript-pong/
+ * http://codeincomplete.com/posts/javascript-pong/
  * Game Runner Loop
  * This is a library used to abstract away standard setup for a canvas game.
  * Copious comments not included for that reason.
