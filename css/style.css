@@ -1,21 +1,18 @@
 body {
     position: fixed;
-    background-color: black;
-    color: white;
+    background-color: #000;
+    color: #fff;
     font-family: Courier, monospace;
+    font-size: 16px;
     height: 100%;
     width: 100%;
     margin: 0 auto;
     z-index: 0;
 }
 
-h2, ul {
+h2, h3, ul {
     margin: 0;
     padding: 0;
-}
-
-h2 {
-    margin-bottom: .25em;
 }
 
 ul {
@@ -28,10 +25,27 @@ canvas {
     width: 100%;
 }
 
+.title {
+    margin-bottom: .75rem;
+    text-align: center;
+}
+
+.blink {
+    animation: blink 1.2s infinite;
+}
+
+@keyframes blink {
+    0%      { color: #000; }
+    70%     { color: #000; }
+    80%     { color: transparent; }
+    90%     { color: transparent; }
+    100%    { color: #000; }
+}
+
 .game-container {
-    height: 97%;
-    width: 98%;
-    margin: .75em auto;
+    height: 95%;
+    width: 95%;
+    margin: 1.1em auto 0;
 }
 
 .modal {
@@ -56,9 +70,9 @@ canvas {
     background: -webkit-linear-gradient(#fff, #999);
     background:    -moz-linear-gradient(#fff, #999);
     background:      -o-linear-gradient(#fff, #999);
-    color: black;
+    color: #000;
     margin: 60px auto;
-    padding: 20px;
+    padding: 1rem;
     width: 400px;
 }
 
@@ -69,8 +83,8 @@ canvas {
 
 .score {
     position: fixed;
-    top: 20px;
-    font-size: 80px;
+    top: 1.4rem;
+    font-size: 4.5rem;
     text-align: center;
     width: 100%;
     z-index: 1;
@@ -78,4 +92,11 @@ canvas {
 
 .tab {
     padding-left: 2em;
+}
+
+@media only screen and (max-width: 500px) {
+    .modal > div {
+        font-size: .64rem;
+        width: 250px;
+    }
 }
